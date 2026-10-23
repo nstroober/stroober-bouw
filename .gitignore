@@ -1,0 +1,10 @@
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Secrets (TinyPNG API key)
+.env
+
+# Python
+__pycache__/
