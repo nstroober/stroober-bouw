@@ -1,0 +1,96 @@
+{
+  "contact": {
+    "phone": "06 13 13 29 79",
+    "email": "lennart@strooberbouw.nl",
+    "street": "Gerbrandystraat 35",
+    "postcode": "8072 WN",
+    "city": "Nunspeet"
+  },
+  "home": {
+    "heroTitle": "Uw project, onze expertise",
+    "heroText": "Van kleine verbouwing tot complete renovatie - wij maken uw woonwensen waar.",
+    "heroImage": {
+      "src": "hero.jpg",
+      "x": 50,
+      "y": 50,
+      "zoom": 1
+    },
+    "intro": "Vakmanschap en persoonlijke aandacht staan bij ons voorop. Door intensieve samenwerking met vaste, vakkundige specialisten realiseren wij elk type verbouwing - van kleine aanpassing tot complete renovatie. Onze kracht ligt in een transparante aanpak en heldere communicatie tijdens het hele bouwproces. Met oog voor detail vertalen we uw woonwensen naar de praktijk. Bij elk project staat kwaliteit centraal, waarbij we u van begin tot eind begeleiden met deskundig advies en vakkundige uitvoering.",
+    "projectsCount": "50+",
+    "services": [
+      {
+        "title": "Renovatie",
+        "text": "Van badkamer tot complete woning - wij geven uw woning een nieuwe uitstraling. Met oog voor detail en binnen de afgesproken tijd maken wij uw renovatiewensen waar.",
+        "image": {
+          "src": "dienst-renovatie.jpg",
+          "x": 63.7,
+          "y": 66.1,
+          "zoom": 1
+        }
+      },
+      {
+        "title": "Uitbouw",
+        "text": "Meer leefruimte nodig? Van ontwerp tot realisatie verzorgen wij uw uitbouw. We adviseren over de mogelijkheden en zorgen voor een vakkundige uitvoering.",
+        "image": {
+          "src": "dienst-uitbouw.jpg",
+          "x": 50,
+          "y": 50,
+          "zoom": 1
+        }
+      },
+      {
+        "title": "Veranda",
+        "text": "Een veranda vergroot uw woongenot. Modern of klassiek, wij realiseren uw droomveranda met aandacht voor materiaal en afwerking.",
+        "image": {
+          "src": "dienst-veranda.jpg",
+          "x": 50,
+          "y": 50,
+          "zoom": 1
+        }
+      }
+    ],
+    "stepsText": "Een succesvol bouwproject begint met een heldere aanpak. Na een vrijblijvend gesprek waarin we uw wensen bespreken, maken we een gedetailleerde offerte. Bij akkoord starten we met een duidelijke planning en houden we u tijdens het hele traject op de hoogte van de voortgang.",
+    "steps": [
+      {
+        "title": "Kennismaking",
+        "text": "Vrijblijvend gesprek om uw wensen te bespreken"
+      },
+      {
+        "title": "Offerte",
+        "text": "Heldere prijsopgave inclusief materialen en planning"
+      },
+      {
+        "title": "Voorbereiding",
+        "text": "Concrete werkplanning en afstemming startdatum"
+      },
+      {
+        "title": "Uitvoering",
+        "text": "Vakkundige realisatie met korte communicatielijnen"
+      }
+    ]
+  },
+  "over": {
+    "title": "Stroober Bouw & Onderhoud",
+    "text": "Wij zijn in 2019 gestart vanuit een passie voor het bouwersvak en oog voor detail. Door de jaren heen hebben wij een betrouwbaar netwerk opgebouwd van vakkundige specialisten, waarmee we regelmatig samenwerken om projecten te realiseren. Van elektricien tot stukadoor - elk aspect wordt door de juiste vakman uitgevoerd.\n\nWat ons onderscheidt is de persoonlijke aanpak. Als vast aanspreekpunt zijn wij direct betrokken bij elk project en werken we mee op de bouw. Hierdoor houden we grip op de kwaliteit en planning, en kunnen we flexibel inspelen op eventuele aanpassingen tijdens het project.\n\nDoor kleinschalig te blijven en bewust te kiezen voor projecten die bij ons passen, kunnen we elke klant de aandacht geven die het verdient. Kwaliteit gaat bij ons boven kwantiteit.",
+    "image": {
+      "src": "lennart.jpg",
+      "x": 50,
+      "y": 50,
+      "zoom": 1
+    }
+  },
+  "contactPage": {
+    "text": "Heeft u een vraag of wilt u een vrijblijvend gesprek over uw plannen? Bel, mail of stuur een bericht via het formulier.",
+    "image": {
+      "src": "contact.jpg",
+      "x": 50,
+      "y": 50,
+      "zoom": 1
+    },
+    "formEndpoint": "https://formsubmit.co/ajax/lennart@strooberbouw.nl"
+  },
+  "cta": {
+    "title": "Plannen voor uw woning?",
+    "text": "Neem vrijblijvend contact op, dan bespreken we samen de mogelijkheden."
+  }
+}

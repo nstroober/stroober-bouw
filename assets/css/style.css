@@ -99,12 +99,30 @@ p { margin: 0 0 1em; }
 /* Page layouts */
 .page-title { padding: 40px 0 24px; }
 .split { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
-.split img { border-radius: var(--radius); width: 100%; }
+.frame { border-radius: var(--radius); overflow: hidden; aspect-ratio: 4 / 3; background: var(--soft); }
+.frame img { width: 100%; height: 100%; object-fit: cover; }
+.contact-split { align-items: start; }
+.contact-split .frame { position: sticky; top: 110px; }
 .contact-list { list-style: none; padding: 0; margin: 0 0 24px; display: grid; gap: 14px; font-size: 18px; }
 .contact-list li { display: flex; gap: 12px; align-items: center; }
 .contact-list svg { width: 22px; height: 22px; flex: none; color: var(--blue); }
 .contact-list a { text-decoration: none; }
 .contact-list a:hover { text-decoration: underline; }
+
+/* Contact form */
+.contact-form { display: grid; gap: 14px; margin-top: 32px; }
+.contact-form label { display: grid; gap: 6px; font-size: 14px; font-weight: 500; }
+.contact-form label small { font-size: inherit; font-weight: 400; color: var(--muted); }
+.contact-form input, .contact-form textarea { font: inherit; font-size: 16px; color: var(--text); background: var(--soft); border: 1.5px solid transparent; border-radius: 8px; padding: 12px 14px; width: 100%; }
+.contact-form input:focus, .contact-form textarea:focus { outline: none; border-color: var(--blue); background: #fff; }
+.contact-form textarea { resize: vertical; min-height: 120px; }
+.contact-form button { justify-self: start; cursor: pointer; }
+.contact-form button:disabled { opacity: .6; cursor: wait; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-note { font-size: 13px; color: var(--muted); margin: 0; }
+.form-status { margin: 0; padding: 12px 14px; border-radius: 8px; background: #e6fcfa; }
+.form-status.error { background: #fdecec; color: #8a1c1c; }
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; }
 
 /* Project detail */
 .project-hero { position: relative; border-radius: var(--radius); overflow: hidden; aspect-ratio: 16 / 7; }
@@ -150,7 +168,7 @@ p { margin: 0 0 1em; }
   :root { --gutter: 16px; }
   .section { padding: 44px 0; }
   .intro, .steps-grid, .split, .project-body { grid-template-columns: 1fr; gap: 28px; }
-  .steps-grid .sticky { position: static; }
+  .steps-grid .sticky, .contact-split .frame { position: static; }
   .gallery { grid-template-columns: 1fr 1fr; }
   .panel { aspect-ratio: 4 / 5; }
   .panel-text { right: 16px; }
@@ -164,7 +182,7 @@ p { margin: 0 0 1em; }
   .nav { display: none; position: absolute; top: 68px; left: 0; right: 0; background: #fff; flex-direction: column; gap: 0; padding: 8px 16px 16px; box-shadow: 0 12px 24px rgba(0,2,77,.08); }
   .nav.open { display: flex; }
   .nav a { padding: 12px 0; font-size: 18px; border-bottom: 1px solid #eef; }
-  .grid, .gallery { grid-template-columns: 1fr; }
+  .grid, .gallery, .form-row { grid-template-columns: 1fr; }
   .card-label { opacity: 1; transform: none; }
   .tabs { gap: 8px; }
   .tab { padding: 14px 6px; font-size: 14px; }

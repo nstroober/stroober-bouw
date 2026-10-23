@@ -1,0 +1,59 @@
+name: Bouwen en publiceren
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Nieuwe foto's comprimeren (TinyPNG)
+        continue-on-error: true
+        env:
+          TINYPNG_API_KEY: ${{ secrets.TINYPNG_API_KEY }}
+        run: |
+          pip install --quiet tinify
+          python compress-images.py
+          if [ -n "$(git status --porcelain assets/img)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add assets/img
+            git commit -m "Foto's gecomprimeerd via TinyPNG"
+            git pull --rebase && git push
+          fi
+
+      - name: Site bouwen
+        run: python build.py
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

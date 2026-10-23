@@ -8,3 +8,12 @@
 
 # Python
 __pycache__/
+
+# Gegenereerd door build.py (de GitHub Action bouwt dit bij elke push)
+/index.html
+/404.html
+/over/
+/contact/
+/projecten/
+/sitemap.xml
+/robots.txt

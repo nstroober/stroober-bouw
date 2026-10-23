@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Beheer - Stroober Bouw &amp; Onderhoud</title>
+<link rel="icon" type="image/png" href="/assets/img/favicon.png">
+<style>
+  * { box-sizing: border-box; }
+  :root { --navy: #00024d; --turq: #01e4d1; --blue: #00b0fc; --bg: #f4f5f9; --line: #d9dbe8; --muted: #5c5f86; --red: #c62828; }
+  body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif; background: var(--bg); color: var(--navy); font-size: 15px; line-height: 1.5; }
+  button, input, textarea, select { font: inherit; color: inherit; }
+  header.bar { position: sticky; top: 0; z-index: 50; background: var(--navy); color: #fff; padding: 10px 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  header.bar img { height: 30px; background: #fff; border-radius: 6px; padding: 3px 6px; }
+  header.bar h1 { font-size: 16px; font-weight: 600; margin: 0 auto 0 0; }
+  #status { font-size: 13px; color: #c9cbf0; }
+  #status.error { color: #ffb4a8; font-weight: 600; }
+  #status.ok { color: #8ef0e6; }
+  .btn { padding: 8px 14px; border-radius: 8px; border: 0; cursor: pointer; background: #23266e; color: #fff; text-decoration: none; font-size: 14px; white-space: nowrap; }
+  .btn:hover { background: #33377f; }
+  .btn.primary { background: var(--turq); color: var(--navy); font-weight: 600; }
+  .btn.primary:hover { background: #5ff0e4; }
+  .btn.light { background: #fff; color: var(--navy); border: 1px solid var(--line); }
+  .btn.light:hover { background: #eef0f8; }
+  .btn.danger { background: #fff; color: var(--red); border: 1px solid #f0c4c4; }
+  .btn.danger:hover { background: #fdecec; }
+  .btn:disabled { opacity: .4; cursor: default; }
+  .dirty-dot { color: var(--turq); }
+  .warnbar { background: #8a6d1f; color: #fff; font-size: 13px; padding: 8px 20px; }
+  nav.tabs { display: flex; gap: 8px; padding: 16px 20px 0; max-width: 1080px; margin: 0 auto; flex-wrap: wrap; }
+  .tab { padding: 8px 16px; border-radius: 999px; border: 1px solid var(--line); background: #fff; cursor: pointer; }
+  .tab.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+  main { max-width: 1080px; margin: 0 auto; padding: 20px; }
+  .hint { font-size: 13px; color: var(--muted); margin: 0 0 16px; }
+  .card { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,2,77,.06); }
+  .card h2 { font-size: 17px; margin: 0 0 14px; }
+  .card h3 { font-size: 15px; margin: 18px 0 10px; }
+  label.f { display: block; margin-bottom: 14px; font-size: 13px; font-weight: 600; }
+  label.f small { font-weight: 400; color: var(--muted); }
+  label.f input, label.f textarea { display: block; width: 100%; margin-top: 5px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: #fff; font-weight: 400; font-size: 15px; }
+  label.f textarea { min-height: 120px; resize: vertical; line-height: 1.5; }
+  label.f input:focus, label.f textarea:focus { outline: 2px solid var(--blue); outline-offset: -1px; border-color: transparent; }
+  .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0 16px; }
+
+  /* projectlijst */
+  .plist { display: grid; gap: 8px; }
+  .pitem { display: flex; align-items: center; gap: 14px; background: #fff; border-radius: 12px; padding: 10px; box-shadow: 0 1px 3px rgba(0,2,77,.06); }
+  .pitem img { width: 96px; height: 72px; object-fit: cover; border-radius: 8px; background: var(--bg); flex: none; }
+  .pitem .info { flex: 1; min-width: 0; cursor: pointer; }
+  .pitem .info strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pitem .info span { font-size: 13px; color: var(--muted); }
+  .pitem .home { font-size: 11px; background: var(--turq); border-radius: 999px; padding: 1px 8px; margin-left: 6px; }
+  .pitem .arrows { display: flex; flex-direction: column; gap: 4px; }
+  .pitem .arrows button { border: 1px solid var(--line); background: #fff; border-radius: 6px; width: 30px; height: 26px; cursor: pointer; }
+  .topactions { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+
+  /* foto-uitsnedes */
+  .photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .cell { display: flex; flex-direction: column; gap: 6px; }
+  .frame { position: relative; aspect-ratio: 4 / 3; overflow: hidden; border-radius: 10px; background: var(--bg); cursor: grab; touch-action: none; box-shadow: 0 1px 4px rgba(0,2,77,.15); }
+  .frame:active { cursor: grabbing; }
+  .frame img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; user-select: none;
+    object-position: var(--px, 50%) var(--py, 50%); transform: scale(var(--zoom, 1)); transform-origin: var(--px, 50%) var(--py, 50%); }
+  .frame .badge { position: absolute; top: 6px; left: 8px; background: rgba(0,2,77,.7); color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 999px; pointer-events: none; }
+  .frame .badge.cover { background: var(--turq); color: var(--navy); font-weight: 600; }
+  .wide { aspect-ratio: 16 / 7; margin-bottom: 6px; }
+  .zoomrow { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+  .zoomrow input { flex: 1; accent-color: var(--navy); }
+  .tools { display: flex; gap: 4px; }
+  .tools button { flex: 1; padding: 4px 0; border-radius: 6px; border: 1px solid var(--line); background: #fff; cursor: pointer; font-size: 13px; }
+  .tools button:hover { background: #eef0f8; }
+  .addtile { align-self: start; flex-direction: column; aspect-ratio: 4 / 3; border: 2px dashed #b9bcd6; border-radius: 10px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 12px; color: var(--muted); cursor: pointer; }
+  .addtile:hover { border-color: var(--navy); color: var(--navy); }
+  .imgfield { max-width: 520px; margin-bottom: 14px; }
+  .imgfield .lbl { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+
+  .panel { max-width: 520px; margin: 48px auto; background: #fff; border-radius: 16px; padding: 28px; box-shadow: 0 1px 3px rgba(0,2,77,.06); }
+  .panel h2 { margin: 0 0 12px; font-size: 18px; }
+  .panel input { display: block; width: 100%; margin: 8px 0 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; }
+  .panel code { background: var(--bg); padding: 1px 5px; border-radius: 4px; }
+  .err { color: var(--red); }
+  .setup-link { display: block; text-align: center; margin-top: 16px; font-size: 13px; color: var(--muted); cursor: pointer; text-decoration: underline; background: none; border: 0; width: 100%; }
+
+  @media (max-width: 800px) { .photos { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) {
+    header.bar { padding: 8px 12px; }
+    header.bar h1 { flex-basis: 100%; order: -1; }
+    #status { flex-basis: 100%; order: 5; }
+    main { padding: 12px; }
+    .photos { grid-template-columns: 1fr; }
+    .pitem img { width: 72px; height: 54px; }
+  }
+</style>
+</head>
+<body>
+<header class="bar">
+  <img src="/assets/img/logo.png" alt="">
+  <h1>Websitebeheer <span id="dirty" class="dirty-dot" hidden>● niet opgeslagen</span></h1>
+  <span id="status"></span>
+  <button class="btn" id="logout" hidden>Uitloggen</button>
+  <button class="btn primary" id="save" disabled>Opslaan &amp; publiceren</button>
+  <a class="btn" href="/" target="_blank">Bekijk site ↗</a>
+</header>
+
+<div class="warnbar" id="localwarn" hidden>
+  Let op: je gebruikt beheer via localhost. <strong>Opslaan &amp; publiceren</strong> zet wijzigingen live op strooberbouw.nl; lokaal zie je ze pas na <code>git pull</code> en <code>python3 build.py</code>.
+</div>
+
+<div class="panel" id="login-panel" hidden>
+  <h2>Inloggen</h2>
+  <input type="password" id="password" placeholder="Wachtwoord" autocomplete="current-password">
+  <button class="btn primary" id="login">Inloggen</button>
+  <p class="err" id="login-error" hidden>Wachtwoord onjuist.</p>
+  <button class="setup-link" id="show-setup">Wachtwoord instellen of wijzigen (beheerder)</button>
+</div>
+
+<div class="panel" id="setup-panel" hidden>
+  <h2>Wachtwoord instellen</h2>
+  <p>Hiervoor is een GitHub-token nodig: maak er een aan onder <em>Settings → Developer settings → Fine-grained personal access tokens</em>, met alleen toegang tot <code>stroober-bouw</code> en het recht <em>Contents: Read and write</em>. Het token wordt versleuteld met het wachtwoord opgeslagen; daarna is alleen het wachtwoord nodig om in te loggen.</p>
+  <input type="password" id="setup-token" placeholder="GitHub-token" autocomplete="off">
+  <input type="password" id="setup-password" placeholder="Nieuw wachtwoord (minimaal 10 tekens)" autocomplete="new-password">
+  <button class="btn primary" id="setup-go">Wachtwoord opslaan</button>
+  <p class="err" id="setup-error" hidden></p>
+  <button class="setup-link" id="back-login">Terug naar inloggen</button>
+</div>
+
+<nav class="tabs" id="tabs" hidden></nav>
+<main id="editor" hidden></main>
+
+<script>
+const OWNER = 'nstroober', REPO = 'stroober-bouw', BRANCH = 'main';
+const API = `https://api.github.com/repos/${OWNER}/${REPO}/contents/`;
+const RAW = `https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}/`;
+const PROJECT_DIR = 'assets/img/projecten/';
+const SITE_DIR = 'assets/img/';
+
+let site = null, projects = null, auth = null;
+let view = { tab: 'projecten', project: null };
+let dirty = false;
+let pendingUploads = {};   // repo-pad -> Blob
+let previewUrls = {};      // repo-pad -> object URL
+let removedPaths = new Set();
+let token = sessionStorage.getItem('sb-admin-token') || '';
+
+const $ = sel => document.querySelector(sel);
+const el = (tag, props = {}, ...children) => {
+  const e = Object.assign(document.createElement(tag), props);
+  children.flat().forEach(c => c != null && e.append(c));
+  return e;
+};
+const setStatus = (msg, level) => {
+  const s = $('#status');
+  s.textContent = msg;
+  s.className = level || '';
+};
+const markDirty = () => { dirty = true; $('#dirty').hidden = false; $('#save').disabled = !token; };
+
+// --- crypto: het GitHub-token staat AES-versleuteld in content/admin.json ---
+const b64e = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+const b64d = str => Uint8Array.from(atob(str), c => c.charCodeAt(0));
+const utf8ToB64 = str => btoa(unescape(encodeURIComponent(str)));
+const b64ToUtf8 = b64 => new TextDecoder().decode(b64d(b64.replace(/\n/g, '')));
+
+async function deriveKey(password, salt) {
+  const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(password.normalize('NFC')), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: 300000, hash: 'SHA-256' }, km,
+    { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
+async function encryptToken(rawToken, password) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await deriveKey(password, salt);
+  const data = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(rawToken));
+  return { salt: b64e(salt), iv: b64e(iv), data: b64e(data) };
+}
+async function decryptToken(a, password) {
+  const key = await deriveKey(password, b64d(a.salt));
+  const data = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64d(a.iv) }, key, b64d(a.data));
+  return new TextDecoder().decode(data);
+}
+const authHeaders = () => ({ 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github+json' });
+
+// --- laden: ingelogd via de GitHub API (altijd de laatste stand), anders van de site ---
+async function fetchJson(path) {
+  if (token) {
+    const r = await fetch(API + path + '?ref=' + BRANCH + '&t=' + Date.now(), { headers: authHeaders(), cache: 'no-store' });
+    if (r.ok) return JSON.parse(b64ToUtf8((await r.json()).content));
+    if (r.status === 401) { token = ''; sessionStorage.removeItem('sb-admin-token'); }
+    else setStatus('Kon de laatste versie niet ophalen (' + r.status + ').', 'error');
+  }
+  for (const url of ['/' + path, RAW + path]) {
+    try {
+      const r = await fetch(url + '?t=' + Date.now(), { cache: 'no-store' });
+      if (r.ok) return r.json();
+    } catch (e) {}
+  }
+  return null;
+}
+async function loadContent() {
+  [site, projects] = await Promise.all([fetchJson('content/site.json'), fetchJson('content/projects.json')]);
+  if (!site || !projects) throw new Error('content niet gevonden');
+}
+
+// Afbeelding tonen: nieuw geüpload -> lokaal voorbeeld; anders van de site, met GitHub als terugval
+function setImg(img, repoPath, small = true) {
+  const path = small ? repoPath.replace(/\.jpg$/, '-sm.jpg') : repoPath;
+  if (previewUrls[path]) { img.src = previewUrls[path]; return; }
+  img.onerror = () => { img.onerror = null; img.src = RAW + path; };
+  img.src = '/' + path;
+}
+
+// --- uitsnede: slepen om te positioneren, schuif om te zoomen ---
+function applyVars(img, item) {
+  img.style.setProperty('--px', (item.x ?? 50) + '%');
+  img.style.setProperty('--py', (item.y ?? 50) + '%');
+  img.style.setProperty('--zoom', item.zoom ?? 1);
+}
+function enableDrag(frame, img, item, onChange) {
+  let startX, startY, baseX, baseY, dragging = false;
+  frame.addEventListener('pointerdown', e => {
+    dragging = true; startX = e.clientX; startY = e.clientY;
+    baseX = item.x ?? 50; baseY = item.y ?? 50;
+    frame.setPointerCapture(e.pointerId);
+  });
+  frame.addEventListener('pointermove', e => {
+    if (!dragging || !img.naturalWidth) return;
+    const cw = frame.clientWidth, ch = frame.clientHeight, zoom = item.zoom || 1;
+    const s = Math.max(cw / img.naturalWidth, ch / img.naturalHeight) * zoom;
+    const overX = img.naturalWidth * s - cw, overY = img.naturalHeight * s - ch;
+    let x = baseX, y = baseY;
+    if (overX > 1) x = baseX - (e.clientX - startX) / overX * 100;
+    if (overY > 1) y = baseY - (e.clientY - startY) / overY * 100;
+    item.x = Math.round(Math.min(100, Math.max(0, x)) * 10) / 10;
+    item.y = Math.round(Math.min(100, Math.max(0, y)) * 10) / 10;
+    onChange();
+  });
+  const stop = () => { if (dragging) { dragging = false; markDirty(); } };
+  frame.addEventListener('pointerup', stop);
+  frame.addEventListener('pointercancel', stop);
+}
+// Eén of meer frames (bijv. 4:3 en breed) die dezelfde uitsnede delen, met zoom en knoppen
+function cropper(item, repoPath, { ratios = ['4 / 3'], badge, extraTools = [], onReplace } = {}) {
+  const wrap = el('div', { className: 'cell' });
+  const imgs = [];
+  const refresh = () => imgs.forEach(i => applyVars(i, item));
+  ratios.forEach((ratio, n) => {
+    const frame = el('div', { className: 'frame' + (n === 0 && ratios.length > 1 ? ' wide' : '') });
+    frame.style.aspectRatio = ratio;
+    const img = el('img', { alt: '' });
+    setImg(img, repoPath, ratio === '4 / 3');
+    frame.append(img);
+    if (badge && n === ratios.length - 1) frame.append(el('span', { className: badge.cls, textContent: badge.text }));
+    imgs.push(img);
+    enableDrag(frame, img, item, refresh);
+    wrap.append(frame);
+  });
+  refresh();
+  const range = el('input', { type: 'range', min: 1, max: 3, step: 0.02, value: item.zoom || 1 });
+  const zv = el('span', { textContent: (item.zoom || 1).toFixed(2) + '×' });
+  range.oninput = () => { item.zoom = parseFloat(range.value); zv.textContent = item.zoom.toFixed(2) + '×'; refresh(); markDirty(); };
+  wrap.append(el('div', { className: 'zoomrow' }, el('span', { textContent: 'zoom' }), range, zv));
+  const tools = el('div', { className: 'tools' });
+  const mk = (label, title, fn) => el('button', { textContent: label, title, onclick: fn, type: 'button' });
+  tools.append(
+    ...extraTools.map(t => mk(...t)),
+    mk('↺', 'Centreren en zoom resetten', () => { item.x = 50; item.y = 50; item.zoom = 1; range.value = 1; zv.textContent = '1.00×'; refresh(); markDirty(); }),
+  );
+  if (onReplace) tools.append(mk('Vervang', 'Andere foto uploaden', onReplace));
+  wrap.append(tools);
+  return wrap;
+}
+
+// --- foto's verwerken: verkleinen naar 1600px + 800px variant ---
+function loadImage(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error(file.name + ' kon niet worden gelezen (gebruik JPG of PNG)'));
+    img.src = URL.createObjectURL(file);
+  });
+}
+function resized(img, max) {
+  const scale = Math.min(1, max / Math.max(img.width, img.height));
+  const c = el('canvas', { width: Math.round(img.width * scale), height: Math.round(img.height * scale) });
+  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+  return new Promise((resolve, reject) => c.toBlob(b => b ? resolve(b) : reject(new Error('verwerken mislukt')), 'image/jpeg', 0.86));
+}
+async function addUpload(file, dir, prefix) {
+  const img = await loadImage(file);
+  const name = `${prefix}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}.jpg`;
+  const full = dir + name, small = full.replace(/\.jpg$/, '-sm.jpg');
+  pendingUploads[full] = await resized(img, 1600);
+  pendingUploads[small] = await resized(img, 800);
+  previewUrls[full] = URL.createObjectURL(pendingUploads[full]);
+  previewUrls[small] = URL.createObjectURL(pendingUploads[small]);
+  return name;
+}
+function pickFiles(multiple, handler) {
+  const input = el('input', { type: 'file', accept: 'image/jpeg,image/png,image/webp,image/heic', multiple });
+  input.onchange = async () => {
+    const files = [...input.files];
+    if (!files.length) return;
+    try {
+      for (let i = 0; i < files.length; i++) {
+        setStatus(`Foto ${i + 1}/${files.length} verwerken…`);
+        await handler(files[i]);
+      }
+      setStatus('');
+      markDirty(); render();
+    } catch (e) {
+      setStatus(e.message, 'error');
+    }
+  };
+  input.click();
+}
+function forget(dir, name) {
+  const full = dir + name, small = full.replace(/\.jpg$/, '-sm.jpg');
+  if (pendingUploads[full]) { delete pendingUploads[full]; delete pendingUploads[small]; }
+  else { removedPaths.add(full); removedPaths.add(small); }
+}
+
+// --- weergave ---
+function render() {
+  const tabs = $('#tabs');
+  tabs.innerHTML = '';
+  [['projecten', 'Projecten'], ['teksten', 'Teksten & foto\'s']].forEach(([id, label]) => {
+    tabs.append(el('button', { className: 'tab' + (view.tab === id ? ' active' : ''), textContent: label,
+      onclick: () => { view = { tab: id, project: null }; render(); } }));
+  });
+  const main = $('#editor');
+  main.innerHTML = '';
+  if (view.tab === 'teksten') renderTexts(main);
+  else if (view.project) renderProject(main, view.project);
+  else renderProjectList(main);
+  window.scrollTo(0, view.scroll || 0);
+  view.scroll = 0;
+}
+
+function renderProjectList(main) {
+  main.append(el('div', { className: 'topactions' },
+    el('p', { className: 'hint', style: 'margin:0', innerHTML: 'De bovenste 4 projecten staan op de homepage. Volgorde aanpassen met ▲▼. Klik op een project om het te bewerken.' }),
+    el('button', { className: 'btn primary', textContent: '+ Nieuw project', onclick: () => {
+      const p = { slug: '', title: '', location: '', type: '', text: '', images: [] };
+      projects.unshift(p); markDirty();
+      view = { tab: 'projecten', project: p }; render();
+    } })
+  ));
+  const list = el('div', { className: 'plist' });
+  projects.forEach((p, i) => {
+    const thumb = el('img', { alt: '' });
+    if (p.images[0]) setImg(thumb, PROJECT_DIR + p.images[0].src);
+    const open = () => { view = { tab: 'projecten', project: p }; render(); };
+    const move = d => { const j = i + d; if (j < 0 || j >= projects.length) return; [projects[i], projects[j]] = [projects[j], projects[i]]; markDirty(); view.scroll = scrollY; render(); };
+    list.append(el('div', { className: 'pitem' },
+      thumb,
+      el('div', { className: 'info', onclick: open },
+        el('strong', {}, p.title || '(zonder titel)', i < 4 ? el('span', { className: 'home', textContent: 'homepage' }) : null),
+        el('span', { textContent: [p.location, p.type, p.images.length + ' foto\'s'].filter(Boolean).join(' · ') })),
+      el('div', { className: 'arrows' },
+        el('button', { textContent: '▲', title: 'Omhoog', onclick: () => move(-1) }),
+        el('button', { textContent: '▼', title: 'Omlaag', onclick: () => move(1) })),
+      el('button', { className: 'btn light', textContent: 'Bewerken', onclick: open })
+    ));
+  });
+  main.append(list);
+}
+
+function field(obj, key, label, { multiline = false, hint = '', list } = {}) {
+  const input = multiline ? el('textarea') : el('input', { type: 'text' });
+  input.value = obj[key] ?? '';
+  if (list) input.setAttribute('list', list);
+  input.oninput = () => { obj[key] = input.value; markDirty(); };
+  return el('label', { className: 'f' }, label, hint ? el('small', { textContent: ' ' + hint }) : null, input);
+}
+
+function renderProject(main, p) {
+  main.append(el('div', { className: 'topactions' },
+    el('button', { className: 'btn light', textContent: '← Alle projecten', onclick: () => { view = { tab: 'projecten', project: null }; render(); } }),
+    el('button', { className: 'btn danger', textContent: 'Project verwijderen', onclick: () => {
+      if (!confirm(`"${p.title || 'Dit project'}" verwijderen? Dit wordt pas definitief na Opslaan & publiceren.`)) return;
+      p.images.forEach(im => forget(PROJECT_DIR, im.src));
+      projects.splice(projects.indexOf(p), 1); markDirty();
+      view = { tab: 'projecten', project: null }; render();
+    } })
+  ));
+
+  const types = [...new Set(projects.map(x => x.type).filter(Boolean))];
+  const details = el('div', { className: 'card' },
+    el('h2', { textContent: 'Gegevens' }),
+    field(p, 'title', 'Titel'),
+    el('div', { className: 'row' }, field(p, 'location', 'Locatie', { hint: 'bijv. Nunspeet' }), field(p, 'type', 'Project type', { list: 'types' })),
+    el('datalist', { id: 'types' }, types.map(t => el('option', { value: t }))),
+    field(p, 'text', 'Tekst', { multiline: true, hint: '(lege regel = nieuwe alinea)' }),
+    el('p', { className: 'hint', textContent: p.slug ? `Adres: strooberbouw.nl/projecten/${p.slug}/` : 'Het webadres wordt bij opslaan gemaakt op basis van de titel.' })
+  );
+
+  const photos = el('div', { className: 'photos' });
+  p.images.forEach((im, i) => {
+    const swap = d => { const j = i + d; if (j < 0 || j >= p.images.length) return; [p.images[i], p.images[j]] = [p.images[j], p.images[i]]; markDirty(); view.scroll = scrollY; render(); };
+    photos.append(cropper(im, PROJECT_DIR + im.src, {
+      ratios: i === 0 ? ['16 / 7', '4 / 3'] : ['4 / 3'],
+      badge: i === 0 ? { cls: 'badge cover', text: 'omslagfoto' } : { cls: 'badge', text: i + 1 },
+      extraTools: [
+        ['◀', 'Naar voren', () => swap(-1)],
+        ['▶', 'Naar achteren', () => swap(1)],
+        ['✕', 'Verwijderen', () => { if (confirm('Foto ' + (i + 1) + ' verwijderen?')) { forget(PROJECT_DIR, im.src); p.images.splice(i, 1); markDirty(); view.scroll = scrollY; render(); } }],
+      ],
+    }));
+  });
+  photos.append(el('div', { className: 'addtile', innerHTML: '<span>+ Foto\'s toevoegen</span><small>meerdere tegelijk kan</small>', onclick: () => {
+    view.scroll = scrollY;
+    pickFiles(true, async file => {
+      const name = await addUpload(file, PROJECT_DIR, p.slug || 'project');
+      p.images.push({ src: name, x: 50, y: 50, zoom: 1 });
+    });
+  } }));
+
+  main.append(details, el('div', { className: 'card' },
+    el('h2', { textContent: 'Foto\'s' }),
+    el('p', { className: 'hint', textContent: 'De eerste foto is de omslagfoto (brede versie = bovenaan de projectpagina, 4:3 = projectkaart). Sleep in een foto om de uitsnede te kiezen, gebruik de schuif om in te zoomen. In de fotogalerij en vergroting is altijd de hele foto te zien.' }),
+    photos
+  ));
+}
+
+function imageField(obj, key, label, ratio) {
+  const item = obj[key];
+  return el('div', { className: 'imgfield' },
+    el('div', { className: 'lbl', textContent: label }),
+    cropper(item, SITE_DIR + item.src, {
+      ratios: [ratio],
+      onReplace: () => { view.scroll = scrollY; pickFiles(false, async file => {
+        forget(SITE_DIR, item.src);
+        item.src = await addUpload(file, SITE_DIR, key.toLowerCase());
+        item.x = 50; item.y = 50; item.zoom = 1;
+      }); },
+    })
+  );
+}
+
+function renderTexts(main) {
+  const H = site.home, O = site.over, CP = site.contactPage, C = site.contact;
+  main.append(el('p', { className: 'hint', textContent: 'Sleep in een foto om de uitsnede te kiezen. Lege regel in een tekst = nieuwe alinea.' }));
+
+  main.append(el('div', { className: 'card' },
+    el('h2', { textContent: 'Homepage' }),
+    field(H, 'heroTitle', 'Titel bovenaan'),
+    field(H, 'heroText', 'Tekst bovenaan'),
+    imageField(H, 'heroImage', 'Grote foto bovenaan', '16 / 7'),
+    field(H, 'intro', 'Introductietekst', { multiline: true }),
+    field(H, 'projectsCount', 'Aantal afgeronde projecten', { hint: 'bijv. 50+' }),
+    el('h3', { textContent: 'Onze diensten' }),
+    H.services.map((s, i) => el('div', {},
+      el('div', { className: 'row' }, field(s, 'title', `Dienst ${i + 1}: naam`)),
+      field(s, 'text', 'Tekst', { multiline: true }),
+      imageField(s, 'image', 'Foto', '16 / 7'))),
+    el('h3', { textContent: 'Hoe gaan wij te werk?' }),
+    field(H, 'stepsText', 'Tekst', { multiline: true }),
+    H.steps.map((s, i) => el('div', { className: 'row' }, field(s, 'title', `Stap ${i + 1}`), field(s, 'text', 'Omschrijving')))
+  ));
+
+  main.append(el('div', { className: 'card' },
+    el('h2', { textContent: 'Over-pagina' }),
+    field(O, 'title', 'Titel'),
+    field(O, 'text', 'Tekst', { multiline: true }),
+    imageField(O, 'image', 'Foto', '4 / 3')
+  ));
+
+  main.append(el('div', { className: 'card' },
+    el('h2', { textContent: 'Contactgegevens' }),
+    el('p', { className: 'hint', textContent: 'Deze gegevens staan op de contactpagina en onderaan elke pagina.' }),
+    el('div', { className: 'row' }, field(C, 'phone', 'Telefoon'), field(C, 'email', 'E-mail')),
+    el('div', { className: 'row' }, field(C, 'street', 'Straat + huisnummer'), field(C, 'postcode', 'Postcode'), field(C, 'city', 'Plaats')),
+    field(CP, 'text', 'Tekst op de contactpagina', { multiline: true }),
+    imageField(CP, 'image', 'Foto contactpagina', '4 / 3')
+  ));
+
+  main.append(el('div', { className: 'card' },
+    el('h2', { textContent: 'Blok "Neem contact op" (onderaan pagina\'s)' }),
+    field(site.cta, 'title', 'Titel'),
+    field(site.cta, 'text', 'Tekst')
+  ));
+}
+
+// --- opslaan: één commit met alles (alles-of-niets) ---
+async function gh(path, opts) {
+  const r = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}${path}`, {
+    ...opts, headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+  });
+  if (!r.ok) {
+    let msg = r.status + '';
+    try { msg = (await r.json()).message; } catch (e) {}
+    const err = new Error(msg); err.status = r.status; throw err;
+  }
+  return r.json();
+}
+async function publishCommit(files, deletes, message, retried) {
+  const ref = await gh('/git/ref/heads/' + BRANCH);
+  const baseCommit = ref.object.sha;
+  const baseTree = (await gh('/git/commits/' + baseCommit)).tree.sha;
+  const tree = [];
+  for (const f of files) {
+    const blob = await gh('/git/blobs', { method: 'POST', body: JSON.stringify({ content: f.base64, encoding: 'base64' }) });
+    tree.push({ path: f.path, mode: '100644', type: 'blob', sha: blob.sha });
+  }
+  if (deletes.length) {
+    // alleen verwijderen wat echt in de repo staat, anders weigert GitHub de hele tree
+    const existing = new Set((await gh('/git/trees/' + baseTree + '?recursive=1')).tree.map(t => t.path));
+    deletes.filter(path => existing.has(path)).forEach(path => tree.push({ path, mode: '100644', type: 'blob', sha: null }));
+  }
+  const newTree = await gh('/git/trees', { method: 'POST', body: JSON.stringify({ base_tree: baseTree, tree }) });
+  const commit = await gh('/git/commits', { method: 'POST', body: JSON.stringify({ message, tree: newTree.sha, parents: [baseCommit] }) });
+  try {
+    await gh('/git/refs/heads/' + BRANCH, { method: 'PATCH', body: JSON.stringify({ sha: commit.sha, force: false }) });
+  } catch (e) {
+    if (!retried) return publishCommit(files, deletes, message, true); // tussendoor gewijzigd: één keer opnieuw
+    throw e;
+  }
+}
+const blobToBase64 = blob => new Promise((resolve, reject) => {
+  const fr = new FileReader();
+  fr.onload = () => resolve(fr.result.split(',')[1]);
+  fr.onerror = reject;
+  fr.readAsDataURL(blob);
+});
+function slugify(s) {
+  return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/&/g, ' en ')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 70) || 'project';
+}
+function validate() {
+  for (const p of projects) {
+    if (!p.title.trim()) return 'Er is een project zonder titel.';
+    if (!p.images.length) return `Project "${p.title}" heeft nog geen foto's.`;
+  }
+  for (const p of projects) {
+    if (p.slug) continue;
+    let slug = slugify(p.title), n = 2;
+    while (projects.some(o => o !== p && o.slug === slug)) slug = slugify(p.title) + '-' + n++;
+    p.slug = slug;
+  }
+  return null;
+}
+
+async function save() {
+  if (!token) return;
+  const problem = validate();
+  if (problem) { setStatus(problem, 'error'); alert(problem); return; }
+  $('#save').disabled = true;
+  try {
+    const files = [];
+    const paths = Object.keys(pendingUploads);
+    for (let i = 0; i < paths.length; i++) {
+      setStatus(`Foto ${i + 1}/${paths.length} voorbereiden…`);
+      files.push({ path: paths[i], base64: await blobToBase64(pendingUploads[paths[i]]) });
+    }
+    const sitePlain = JSON.stringify(site, null, 2) + '\n';
+    const projectsPlain = JSON.stringify(projects, null, 2) + '\n';
+    files.push({ path: 'content/site.json', base64: utf8ToB64(sitePlain) });
+    files.push({ path: 'content/projects.json', base64: utf8ToB64(projectsPlain) });
+    // verwijderde foto's alleen weghalen als ze nergens meer gebruikt worden
+    const used = new Set();
+    projects.forEach(p => p.images.forEach(im => { used.add(PROJECT_DIR + im.src); used.add(PROJECT_DIR + im.src.replace(/\.jpg$/, '-sm.jpg')); }));
+    JSON.stringify(site).replace(/"src":"([^"]+)"/g, (m, s) => { used.add(SITE_DIR + s); used.add(SITE_DIR + s.replace(/\.jpg$/, '-sm.jpg')); });
+    const deletes = [...removedPaths].filter(path => !used.has(path));
+
+    setStatus('Publiceren…');
+    await publishCommit(files, deletes, 'Website bijgewerkt via beheer');
+    setStatus('Controleren…');
+    const check = await fetchJson('content/projects.json');
+    if (JSON.stringify(check) !== JSON.stringify(projects)) throw new Error('de gepubliceerde versie wijkt af, probeer het opnieuw');
+
+    pendingUploads = {};
+    removedPaths = new Set();
+    dirty = false; $('#dirty').hidden = true;
+    setStatus('Gepubliceerd ✓ Over ±2 minuten live op strooberbouw.nl', 'ok');
+    view.scroll = scrollY; render();
+  } catch (e) {
+    setStatus('NIET GEPUBLICEERD: ' + e.message, 'error');
+    alert('Opslaan is NIET gelukt:\n\n' + e.message + '\n\nJe wijzigingen staan nog in dit scherm; probeer het opnieuw.');
+    $('#save').disabled = false;
+  }
+}
+
+// --- inloggen ---
+function showEditor() {
+  $('#login-panel').hidden = true;
+  $('#setup-panel').hidden = true;
+  $('#tabs').hidden = false;
+  $('#editor').hidden = false;
+  $('#logout').hidden = false;
+  $('#save').disabled = !dirty;
+  render();
+}
+function showLogin() {
+  $('#login-panel').hidden = false;
+  $('#setup-panel').hidden = true;
+  $('#tabs').hidden = true;
+  $('#editor').hidden = true;
+  $('#logout').hidden = true;
+  $('#save').disabled = true;
+  setTimeout(() => $('#password').focus(), 0);
+}
+
+$('#login').onclick = async () => {
+  $('#login-error').hidden = true;
+  const pw = $('#password').value;
+  if (!pw || !auth) { $('#login-error').hidden = false; return; }
+  setStatus('Inloggen…');
+  try {
+    token = await decryptToken(auth, pw);
+  } catch (e) {
+    setStatus('');
+    $('#login-error').hidden = false;
+    return;
+  }
+  sessionStorage.setItem('sb-admin-token', token);
+  await loadContent();
+  setStatus('');
+  showEditor();
+};
+$('#password').addEventListener('keydown', e => { if (e.key === 'Enter') $('#login').click(); });
+$('#show-setup').onclick = () => { $('#login-panel').hidden = true; $('#setup-panel').hidden = false; };
+$('#back-login').onclick = showLogin;
+
+$('#setup-go').onclick = async () => {
+  const err = $('#setup-error');
+  err.hidden = true;
+  const rawToken = $('#setup-token').value.trim();
+  const pw = $('#setup-password').value;
+  if (!rawToken || pw.length < 10) { err.textContent = 'Vul een token in en een wachtwoord van minimaal 10 tekens.'; err.hidden = false; return; }
+  setStatus('Token controleren…');
+  const r = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}`, { headers: { 'Authorization': `Bearer ${rawToken}` } });
+  const repo = r.ok ? await r.json() : null;
+  if (!repo || !repo.permissions || !repo.permissions.push) { setStatus(''); err.textContent = 'Token ongeldig of zonder schrijfrechten op stroober-bouw.'; err.hidden = false; return; }
+  try {
+    token = rawToken;
+    sessionStorage.setItem('sb-admin-token', token);
+    auth = await encryptToken(rawToken, pw);
+    setStatus('Opslaan…');
+    await publishCommit([{ path: 'content/admin.json', base64: utf8ToB64(JSON.stringify({ auth }, null, 2) + '\n') }], [], 'Beheer: wachtwoord ingesteld');
+    await loadContent();
+    setStatus('Wachtwoord opgeslagen ✓', 'ok');
+    showEditor();
+  } catch (e) {
+    setStatus('');
+    err.textContent = 'Opslaan mislukt: ' + e.message;
+    err.hidden = false;
+  }
+};
+
+$('#logout').onclick = () => {
+  if (dirty && !confirm('Je hebt niet-opgeslagen wijzigingen. Toch uitloggen?')) return;
+  token = '';
+  sessionStorage.removeItem('sb-admin-token');
+  dirty = false; $('#dirty').hidden = true;
+  showLogin();
+  setStatus('');
+};
+$('#save').onclick = save;
+window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+
+(async function init() {
+  if (['localhost', '127.0.0.1'].includes(location.hostname)) $('#localwarn').hidden = false;
+  setStatus('Laden…');
+  try {
+    const admin = await fetchJson('content/admin.json');
+    auth = admin && admin.auth;
+    await loadContent();
+    setStatus('');
+    if (token) showEditor();
+    else if (!auth) { $('#setup-panel').hidden = false; }
+    else showLogin();
+  } catch (e) {
+    setStatus('Kon de inhoud niet laden.', 'error');
+  }
+})();
+</script>
+</body>
+</html>

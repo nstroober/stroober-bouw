@@ -58,3 +58,35 @@ if (lightbox) {
     if (Math.abs(dx) > 50) show(index + (dx < 0 ? 1 : -1));
   });
 }
+
+// Contactformulier: verstuurt via FormSubmit zonder de pagina te verlaten
+const form = document.querySelector('.contact-form');
+if (form) {
+  const status = form.querySelector('.form-status');
+  const button = form.querySelector('button[type="submit"]');
+  const show = (msg, error) => {
+    status.textContent = msg;
+    status.classList.toggle('error', !!error);
+    status.hidden = false;
+  };
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (form._honey.value) return;
+    button.disabled = true;
+    try {
+      const res = await fetch(form.action, {
+        method: 'POST',
+        headers: { 'Accept': 'application/json' },
+        body: new FormData(form),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || String(data.success) === 'false') throw new Error(data.message || res.status);
+      form.reset();
+      show('Bedankt voor uw bericht! We nemen zo snel mogelijk contact met u op.');
+    } catch (err) {
+      show('Versturen is niet gelukt. Bel of mail ons gerust direct.', true);
+    } finally {
+      button.disabled = false;
+    }
+  });
+}

@@ -1,61 +1,65 @@
 #!/usr/bin/env python3
 """Comprimeer afbeeldingen in assets/img via de TinyPNG API.
 
-Nieuwe projectfoto's toevoegen:
-  python3 compress-images.py pad/naar/foto.jpg slug-1.jpg   (verkleint, maakt -sm variant, comprimeert)
-Alles opnieuw comprimeren:
-  python3 compress-images.py
+  python3 compress-images.py            comprimeer alleen nieuwe/gewijzigde afbeeldingen
+  python3 compress-images.py --all      alles opnieuw comprimeren
 
-Vereist TINYPNG_API_KEY in .env (pip3 install tinify python-dotenv pillow).
+Welke bestanden al gecomprimeerd zijn staat in assets/img/.tinypng.json (pad -> sha1),
+zodat nieuwe foto's die via /beheer/ zijn geüpload maar één keer door TinyPNG gaan.
+Draait automatisch in de GitHub Action; lokaal vereist het TINYPNG_API_KEY in .env.
 """
+import hashlib
+import json
 import os
 import sys
 from pathlib import Path
 
 import tinify
-from dotenv import load_dotenv
-from PIL import Image, ImageOps
 
 ROOT = Path(__file__).parent
 IMG = ROOT / "assets" / "img"
+MANIFEST = IMG / ".tinypng.json"
 
 
-def compress(path):
-    before = path.stat().st_size
-    tinify.from_file(str(path)).to_file(str(path))
-    after = path.stat().st_size
-    print(f"{path.relative_to(ROOT)}: {before // 1024} KB -> {after // 1024} KB")
-    return before, after
-
-
-def add(source, name):
-    """Zet een nieuwe foto klaar als assets/img/projecten/<name> (1600px) + -sm (800px)."""
-    im = ImageOps.exif_transpose(Image.open(source)).convert("RGB")
-    out = IMG / "projecten" / name
-    for size, target in ((1600, out), (800, out.with_name(out.stem + "-sm.jpg"))):
-        copy = im.copy()
-        copy.thumbnail((size, size))
-        copy.save(target, "JPEG", quality=88)
-        compress(target)
+def sha1(path):
+    return hashlib.sha1(path.read_bytes()).hexdigest()
 
 
 def main():
-    load_dotenv(ROOT / ".env")
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(ROOT / ".env")
+    except ImportError:
+        pass
     tinify.key = os.getenv("TINYPNG_API_KEY")
     if not tinify.key:
-        sys.exit("TINYPNG_API_KEY ontbreekt in .env")
+        print("TINYPNG_API_KEY ontbreekt, compressie overgeslagen")
+        return
 
-    if len(sys.argv) == 3:
-        add(sys.argv[1], sys.argv[2])
-    else:
-        files = sorted(p for p in IMG.rglob("*") if p.suffix.lower() in (".jpg", ".jpeg", ".png"))
-        total_before = total_after = 0
-        for f in files:
-            b, a = compress(f)
-            total_before += b
-            total_after += a
-        print(f"Totaal: {total_before // 1024} KB -> {total_after // 1024} KB")
-    print(f"TinyPNG compressies deze maand: {tinify.compression_count}")
+    done = json.loads(MANIFEST.read_text()) if MANIFEST.exists() else {}
+    files = sorted(p for p in IMG.rglob("*") if p.suffix.lower() in (".jpg", ".jpeg", ".png"))
+    todo = [f for f in files if "--all" in sys.argv or done.get(str(f.relative_to(IMG))) != sha1(f)]
+
+    total_before = total_after = 0
+    for f in todo:
+        before = f.stat().st_size
+        try:
+            tinify.from_file(str(f)).to_file(str(f))
+        except tinify.Error as e:
+            print(f"{f.relative_to(ROOT)}: overgeslagen ({e})")
+            continue
+        after = f.stat().st_size
+        total_before += before
+        total_after += after
+        done[str(f.relative_to(IMG))] = sha1(f)
+        print(f"{f.relative_to(ROOT)}: {before // 1024} KB -> {after // 1024} KB")
+
+    # Verwijderde bestanden uit het manifest halen
+    existing = {str(f.relative_to(IMG)) for f in files}
+    done = {k: v for k, v in sorted(done.items()) if k in existing}
+    MANIFEST.write_text(json.dumps(done, indent=1) + "\n")
+    print(f"{len(todo)} afbeelding(en) gecomprimeerd: {total_before // 1024} KB -> {total_after // 1024} KB "
+          f"(TinyPNG deze maand: {tinify.compression_count})")
 
 
 if __name__ == "__main__":
